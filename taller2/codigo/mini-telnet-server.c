@@ -7,6 +7,8 @@
 
 #include "config.h"
 
+#define cant_pendientes 1;
+
 int main(int argc, char **argv)
 {
 	char buf[MSGLEN + 1];
@@ -20,16 +22,26 @@ int main(int argc, char **argv)
 
 
 	//TODO: Crear el socket
+	//int socket(int domain, int type, int protocol);
+	int s = socket(AF_INET, SOCK_STREAM, 0);
 
 	//TODO: Hacer el bind a la dirección de local
+	//int bind(int s, sockaddr* a, socklen_t len);
+	bind(s, (sockaddr_in*) local, sizeof(local));
 
 	//TODO: Completar conexión del socket para TCP (¿qué otros pasos hacen falta)
+	//int listen(int s, int backlog);
+	int listen(s, cant_pendientes);
 
+	//int accept(int s, sockaddr* a, socklen_t* len);
+	int nuevo_s = accept(s, (sockaddr_in*) local, sizeof(local));
 
 	while(1) {
 		memset(&buf, 0, MSGLEN+1);
 
 		//TODO: Recibir mensaje en buf
+		//ssize_t recv(int s, void *buf, size_t len, int flags);
+		recv(nuevo_s, *buf, sizeof(buf), 0);
 
 
 		//Imprimir comando
@@ -45,5 +57,6 @@ int main(int argc, char **argv)
 	}
 
     //TODO: Cerrar el socket
+    close(nuevo_s);
 	return 0;
 }
