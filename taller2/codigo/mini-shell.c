@@ -42,7 +42,7 @@ static int run(const char ***progs, size_t count)
 
 			} else if(j==count-1){
 
-				dup2(pipefd[j-1][0],0);
+				dup2(pipefd[j-1][0],0); //reemplazo lectura
 				close(pipefd[j-1][1]);
 				close(pipefd[j-2][1]);
 				close(pipefd[j-2][0]);
