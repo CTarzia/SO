@@ -289,14 +289,21 @@ unsigned int Ext2FS::get_block_address(struct Ext2FSInode * inode, unsigned int 
 
 	//TODO: Ejercicio 1
 	//HACER SÓLO HASTA SEGUNDA INDIRECCIÓN
-
+	unsigned int block_size = 1024 << _superblock->log_block_size;
 	if(block_number<12){
 		return inode->block[block_number];
-	} else {
-		unsigned int block_size = 1024 << _superblock->log_block_size;
+	} else if (block_number < block_size/sizeof(unsigned int) + 12){
 		unsigned char * buffer = new unsigned char[block_size];
 		read_block(inode->block[12], buffer);
 		return ((unsigned int*) buffer)[block_number - 12];
+	} else {
+		unsigned char * buffer = new unsigned char[block_size];
+		read_block(inode->block[13], buffer);
+		int table_size = block_size/sizeof(unsigned int);
+		int table_number = (block_number - 12 - table_size) / table_size;
+		int table_position = (block_number - 12 - table_size) % table_size;
+		read_block(((unsigned int*) buffer)[table_number], buffer);
+		return ((unsigned int*) buffer)[table_position];
 	}
 	
 }
