@@ -361,7 +361,7 @@ struct Ext2FSInode * Ext2FS::get_file_inode_from_dir_inode(struct Ext2FSInode * 
 		unsigned int block_address = get_block_address(from, i / block_size);
 		unsigned char buffer[block_size];
 		read_block(block_address, buffer);
-		Ext2FSDirEntry* entry = (Ext2FSDirEntry*) buffer[i % block_size];
+		Ext2FSDirEntry* entry = (Ext2FSDirEntry*) (buffer + i % block_size);
 		if (mismoNombre(entry->name, filename, entry->name_length)) {
 			return load_inode(entry->inode);
 		} else {
