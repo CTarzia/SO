@@ -65,5 +65,16 @@ int main(int argc, char ** argv)
 
 	//TODO: Completar el código del último ejercicio acá
 
+	cout << "voy a open" << endl;
+	fd_t file = fs->open("/grupos/g10/nota.txt", "r");
+	cout << "voy a seek" << endl;
+	fs->seek(file, 14000);
+	unsigned char buffer[51];
+	cout << "voy a buffer" << endl;
+	fs->read(file, buffer, 50);
+	buffer[50] = '\0';
+	cout << "voy a imprimir" << endl;
+	printf((char*) buffer);
+
 	return 0;
 }

@@ -282,6 +282,29 @@ struct Ext2FSInode * Ext2FS::load_inode(unsigned int inode_number)
 {
 	//TODO: Ejercicio 2
 
+	unsigned int block_size = 1024 << _superblock->log_block_size;
+
+	unsigned int group_number = blockgroup_for_inode(inode_number);
+	Ext2FSBlockGroupDescriptor* block_desc = block_group(group_number);
+	unsigned int block_group_index = blockgroup_inode_index(inode_number);
+
+	unsigned int table_dir = block_desc->inode_table;
+	
+	unsigned int table_position = (block_group_index * sizeof(Ext2FSInode) ) / block_size;
+	
+	unsigned char* buffer = new unsigned char[block_size];
+	read_block(table_dir + table_position, buffer);
+
+	Ext2FSInode* table = (Ext2FSInode*) buffer;
+
+	unsigned int block_group_position = (block_group_index) % block_size;
+	Ext2FSInode block_group = table[block_group_position];
+
+	Ext2FSInode* block_group_pointer = new Ext2FSInode;
+
+	*block_group_pointer = block_group;
+
+	return block_group_pointer;
 }
 
 unsigned int Ext2FS::get_block_address(struct Ext2FSInode * inode, unsigned int block_number)
@@ -308,6 +331,13 @@ unsigned int Ext2FS::get_block_address(struct Ext2FSInode * inode, unsigned int 
 	
 }
 
+bool mismoNombre(const char* a, const char* b, int size){
+	for (int i = 0; i < size; i++){
+		if(b[i] == NULL or a[i] != b[i]) return false;
+	}
+	return true;
+}
+
 void Ext2FS::read_block(unsigned int block_address, unsigned char * buffer)
 {
 	unsigned int block_size = 1024 << _superblock->log_block_size;
@@ -320,11 +350,25 @@ struct Ext2FSInode * Ext2FS::get_file_inode_from_dir_inode(struct Ext2FSInode * 
 {
 	if(from == NULL)
 		from = load_inode(EXT2_RDIR_INODE_NUMBER);
-	//std::cerr << *from << std::endl;
+	std::cerr << filename << std::endl;
 	assert(INODE_ISDIR(from));
 
 	//TODO: Ejercicio 3
 
+	unsigned int block_size = 1024 << _superblock->log_block_size;
+	int i = 0;
+	while(i < from->size){
+		unsigned int block_address = get_block_address(from, i / block_size);
+		unsigned char buffer[block_size];
+		read_block(block_address, buffer);
+		Ext2FSDirEntry* entry = (Ext2FSDirEntry*) buffer[i % block_size];
+		if (mismoNombre(entry->name, filename, entry->name_length)) {
+			return load_inode(entry->inode);
+		} else {
+			i += entry->record_length;
+		}
+	}
+	return NULL;
 }
 
 fd_t Ext2FS::get_free_fd()
